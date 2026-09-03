@@ -358,9 +358,9 @@
       { number: "Micro 17", date: "July 27, 2026", physics: "Transformer and resonance", chemistry: "Coordination: bonding and isomerism", mathematics: "Differential equations: solutions", mark: "7.0" },
       { number: "Micro 18", date: "August 3, 2026", physics: "Electromagnetic waves", chemistry: "Haloalkanes and haloarenes", mathematics: "Vector algebra: basics", mark: "9.0" },
       { number: "Micro 19", date: "August 10, 2026", physics: "Ray optics: mirrors", chemistry: "Haloalkanes: substitution reactions", mathematics: "Vector dot and cross products", mark: "8.5" },
-      { number: "Micro 20", date: "August 17, 2026", physics: "Ray optics: refraction", chemistry: "Alcohols and their reactions", mathematics: "3D geometry: direction cosines", mark: "UPCOMING" },
-      { number: "Micro 21", date: "August 24, 2026", physics: "Optical instruments", chemistry: "Phenols and acidity", mathematics: "3D geometry: lines", mark: "UPCOMING" },
-      { number: "Micro 22", date: "August 31, 2026", physics: "Wave optics: interference", chemistry: "Ethers", mathematics: "3D geometry: planes", mark: "UPCOMING" },
+      { number: "Micro 20", date: "August 17, 2026", physics: "Ray optics: refraction", chemistry: "Alcohols and their reactions", mathematics: "3D geometry: direction cosines", mark: "9.0" },
+      { number: "Micro 21", date: "August 24, 2026", physics: "Optical instruments", chemistry: "Phenols and acidity", mathematics: "3D geometry: lines", mark: "8.5" },
+      { number: "Micro 22", date: "August 31, 2026", physics: "Wave optics: interference", chemistry: "Ethers", mathematics: "3D geometry: planes", mark: "0" },
       { number: "Micro 23", date: "September 7, 2026", physics: "Wave optics: diffraction", chemistry: "Aldehydes and nomenclature", mathematics: "Linear programming formulation", mark: "UPCOMING" },
       { number: "Micro 24", date: "September 14, 2026", physics: "Photoelectric effect", chemistry: "Ketones and reactions", mathematics: "Probability: basic concepts", mark: "UPCOMING" },
       { number: "Micro 25", date: "September 21, 2026", physics: "Dual nature and de Broglie relation", chemistry: "Carboxylic acids", mathematics: "Conditional probability", mark: "UPCOMING" },
@@ -390,8 +390,8 @@
 
     const finalEvaluations = [
       { number: "Evaluation 01", title: "Half Syllabus Class 12 PCM", topic: "Physics: Electrostatics to Electromagnetic Waves • Chemistry: Physical Chemistry, p-Block, d/f-Block and Coordination • Mathematics: Relations through Applications of Derivatives", attempts: [
-        { label: "1st Attempt", date: "August 23, 2026", mark: "UPCOMING" },
-        { label: "2nd Attempt", date: "August 30, 2026", mark: "UPCOMING" }
+        { label: "1st Attempt", date: "August 23, 2026", mark: "8.5" },
+        { label: "2nd Attempt", date: "August 30, 2026", mark: "7.0" }
       ]},
       { number: "Evaluation 02", title: "Full Syllabus Class 12 PCM", topic: "Complete Class 12 Physics, Chemistry and Mathematics syllabus", attempts: [
         { label: "1st Attempt", date: "January 17, 2027", mark: "UPCOMING" },
@@ -466,9 +466,18 @@
       }
 
       // CGPA is the average of valid numeric marks from the Google Sheet.
-      // Blank values and UPCOMING values are ignored.
+      // Blank values and UPCOMING values are ignored. Values are trimmed and
+      // checked for "" / "UPCOMING" BEFORE calling Number() on them, because
+      // Number("") is 0 (not NaN) and would otherwise be silently counted as
+      // a real zero score, dragging the average down.
       const numericMarks = data
-        .map(row => Number(row.Marks ?? row.marks))
+        .map(row => {
+          const raw = row.Marks ?? row.marks;
+          if (raw === undefined || raw === null) return NaN;
+          const trimmed = String(raw).trim();
+          if (trimmed === "" || trimmed.toUpperCase() === "UPCOMING") return NaN;
+          return Number(trimmed);
+        })
         .filter(mark => Number.isFinite(mark));
       const calculatedCGPA = numericMarks.length > 0
         ? Number((numericMarks.reduce((total, mark) => total + mark, 0) / numericMarks.length).toFixed(2))
